@@ -681,8 +681,8 @@ matrix_copy:
 
 ################## GASIRE DRUMURI #################
 
-#rezolvare_cerinta_2(m1,m2,mrez,n)
-rezolvare_cerinta_2:
+#rezolvare_cerinta(m1,m2,mrez,n)
+rezolvare_cerinta:
 
   pushl %ebp
   pushl %ebx
@@ -698,6 +698,7 @@ rezolvare_cerinta_2:
 
   call citire_cerinta_2
   #call afisare_cerinta_2
+
 
   #copiere matrice->matrice2
   #pushl $matrice2
@@ -754,6 +755,7 @@ rezolvare_cerinta_2:
 
     #afisare rezultat matrice
     #pushl $matrice_rezultat
+    #pushl 28(%ebp)
     #call afisare_matrice
     #popl %ebx
 
@@ -852,7 +854,7 @@ cerinta_2:
   pushl $matrice_rezultat
   pushl $matrice2
   pushl $matrice
-  call rezolvare_cerinta_2
+  call rezolvare_cerinta
   popl %ebx
   popl %ebx
   popl %ebx
@@ -861,7 +863,11 @@ cerinta_2:
 
 cerinta_3:
   a:
-  pushl n
+
+  #pushl $matrice
+  #call afisare_matrice
+  #popl %ebx
+
   movl n,%eax
   movl n,%ebx
   xorl %edx,%edx
@@ -870,59 +876,91 @@ cerinta_3:
   mull %ebx
   movl %eax,i
 
-  pushl i
-  pushl $printare_numar
-  call printf
-  popl %ebx
-  popl %ebx
+  #pushl i
+  #pushl $printare_numar
+  #call printf
+  #popl %ebx
+  #popl %ebx
+
+  pushl n
 
   #matrice_rezultat
   mov $192,%eax #mmap2
-  mov $0x0,%ebx #let teh os pick the starting adress
-  mov i,%ecx #32bytes
+  mov $0x0,%ebx #let the os pick the starting adress
+  mov i,%ecx #n*n*4bytes
   mov $0x3,%edx #PROT_READ | PROT_WRITE
   mov $0x22,%esi #MAP_ANONYMUS | MAP_PRIVATE
   mov $0,%edi #all bytes 0
   mov $0,%ebp # 0
   int $0x80
+
+  #pushl %eax
+  #call afisare_matrice
+  #popl %ebx
+
   pushl %eax
-  push $printare_numar
-  call printf
-  popl %ebx
-  popl %ebx
+  #pushl %eax
+  #push $printare_numar
+  #call printf
+  #popl %ebx
+  #popl %ebx
 
   b:
   #matrice2
   mov $192,%eax #mmap2
-  mov $0x0,%ebx #let teh os pick the starting adress
-  mov i,%ecx #32bytes
+  mov $0x0,%ebx #let the os pick the starting adress
+  mov i,%ecx #n*n*4bytes
   mov $0x3,%edx #PROT_READ | PROT_WRITE
   mov $0x22,%esi #MAP_ANONYMUS | MAP_PRIVATE
   mov $0,%edi #all bytes 0
   mov $0,%ebp # 0
   int $0x80
+
   pushl %eax
-  push $printare_numar
-  call printf
+  pushl $matrice
+  call matrix_copy
   popl %ebx
-  popl %ebx
+  popl %eax
+
+  #pushl %eax
+  #call afisare_matrice
+  #popl %ebx
+
+  pushl %eax
+  #pushl %eax
+  #push $printare_numar
+  #call printf
+  #popl %ebx
+  #popl %ebx
   c:
   #matrice
   mov $192,%eax #mmap2
-  mov $0x0,%ebx #let teh os pick the starting adress
-  mov i,%ecx #32bytes
+  mov $0x0,%ebx #let the os pick the starting adress
+  mov i,%ecx #n*n*4bytes
   mov $0x3,%edx #PROT_READ | PROT_WRITE
   mov $0x22,%esi #MAP_ANONYMUS | MAP_PRIVATE
   mov $0,%edi #all bytes 0
   mov $0,%ebp # 0
   int $0x80
+
+  #pushl %eax
+  #call afisare_matrice
+  #popl %ex
+
   pushl %eax
-  push $printare_numar
-  call printf
+  pushl $matrice
+  call matrix_copy
   popl %ebx
-  popl %ebx
+  popl %eax
+
+  pushl %eax
+  #pushl %eax
+  #push $printare_numar
+  #call printf
+  #popl %ebx
+  #popl %ebx
   rori:
-  call rezolvare_cerinta_2
+  call rezolvare_cerinta
   popl %ebx
   popl %ebx
   popl %ebx
