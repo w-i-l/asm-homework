@@ -1,5 +1,4 @@
 .data
-
 matrice: .space 40000 #matricea cu 10000 elemnte 100x100
 matrice2: .space 40000 #matricea 2 cu 10000 elemnte 100x100
 matrice_rezultat: .space 40000 #matricea rez cu 10000 elemnte 100x100
@@ -243,10 +242,13 @@ afisare_nr_noduri:
     popl %ebx
     #popl %ebx
 
-    pushl $0
-    call fflush
-    popl %ebx
+    #pushl $0
+    #call fflush
+    #popl %ebx
 
+    pushl $printare_new_line
+    call  printf
+    popl %ebx
     #restaurare valoare index
     popl %ecx
 
@@ -263,10 +265,12 @@ afisare_matrice:
 
   #prolog
   pushl %ebp
+  pushl %edi
+  pushl %ebx
   movl %esp,%ebp
 
   #incarcare adresa matrice
-  movl 8(%ebp),%edi
+  movl 16(%ebp),%edi
   #lea matrice,%edi
 
   #for(i = 0;i < n;i++){
@@ -279,6 +283,7 @@ afisare_matrice:
   #spatiu pt i,j
   subl $8,%esp
 
+  ; pusha
   #-4(%ebp) - i
   #-8(%ebp) - j
 
@@ -334,9 +339,10 @@ afisare_matrice:
       popl %ebx
 
       #afisare pe ecran
-      pushl $0
-      call fflush
-      popl %ebx
+      #pushl $0
+      #call fflush
+      #popl %ebx
+
 
       #j
       movl -8(%ebp),%eax
@@ -347,6 +353,10 @@ afisare_matrice:
 
     continue_af:
 
+      #pushl $printare_new_line
+      #call  puts
+      #popl %ebx
+
       #i
       movl -4(%ebp),%eax
       #i+1
@@ -354,6 +364,7 @@ afisare_matrice:
       movl %eax,-4(%ebp)
 
       #new line de la afisare
+      #afisare fara fflush
       pushl $printare_new_line
       call printf
       popl %ebx
@@ -361,8 +372,12 @@ afisare_matrice:
       jmp for_i_af
 
   iesire_af:
-  movl %ebp,%esp
+  ; popa
+  movl %ebp,%esp#restaurare esp
+  popl %ebx
+  popl %edi
   popl %ebp
+
   ret
 
 afisare_cerinta_2:
@@ -388,10 +403,12 @@ afisare_cerinta_2:
   popl %ebx
   popl %ebx
 
-  pushl $0
-  call fflush
+  #pushl $0
+  # call fflush
+  # popl %ebx
+  pushl $printare_new_line
+  call  printf
   popl %ebx
-
   #epilog
   movl %ebp,%esp
   popl %ebp
@@ -403,6 +420,8 @@ matrix_mult:
 
   #epilog
   pushl %ebp
+  pushl %ebx
+  pushl %edi
   movl %esp,%ebp
 
     #int i,j,k
@@ -416,10 +435,10 @@ matrix_mult:
     #}
 
 
-  #8(%ebp) - matrice
-  #12(%ebp) - matrice2
-  #16(%ebp) - matrice_rezultat
-  #20(%ebp) - n
+  #16(%ebp) - matrice
+  #20(%ebp) - matrice2
+  #24(%ebp) - matrice_rezultat
+  #28(%ebp) - n
   #loc pentru variabile
   subl $12,%esp
   #-4(%ebp) - i
@@ -435,7 +454,7 @@ matrix_mult:
     #i
     movl -4(%ebp),%eax
     #n
-    movl n,%ebx
+    movl 28(%ebp),%ebx
     cmp %eax,%ebx
     je iesire_matrix
 
@@ -447,7 +466,7 @@ matrix_mult:
       #j
       movl -8(%ebp),%eax
       #n
-      movl n,%ebx
+      movl 28(%ebp),%ebx
       cmp %eax,%ebx
       je continue_matrix
 
@@ -457,13 +476,13 @@ matrix_mult:
       #i*n+j
       movl -4(%ebp),%eax #i
       xorl %edx,%edx
-      movl n,%ebx
+      movl 28(%ebp),%ebx
       mull %ebx #i*n
       movl -8(%ebp),%ebx
       addl %ebx,%eax #i*n+j
 
       #matrice_rezultat[i][j] = 0
-      movl 16(%ebp),%edi
+      movl 24(%ebp),%edi
       movl $0,(%edi,%eax,4)
 
       for_k_matrix:
@@ -471,7 +490,7 @@ matrix_mult:
         #k
         movl -12(%ebp),%eax
         #n
-        movl n,%ebx
+        movl 28(%ebp),%ebx
         cmp %eax,%ebx
         je continue_matrix_2
 
@@ -479,11 +498,11 @@ matrix_mult:
         #matrice[i][k]
         movl -4(%ebp),%eax
         xorl %edx,%edx
-        movl n,%ecx
+        movl 28(%ebp),%ecx
         mull %ecx
         movl -12(%ebp),%ebx #k
         addl %ebx,%eax #i*n+k
-        movl 8(%ebp),%edi #matrice
+        movl 16(%ebp),%edi #matrice
         movl (%edi,%eax,4),%ecx #matrice[i][k]
 
         #pushl %ecx
@@ -496,11 +515,11 @@ matrix_mult:
         #matrice2[k][j]
         movl -12(%ebp),%eax
         xorl %edx,%edx
-        movl n,%ebx
+        movl 28(%ebp),%ebx
         mull %ebx
         movl -8(%ebp),%ebx #j
         addl %ebx,%eax #k*n+j
-        movl 12(%ebp),%edi#matrice2
+        movl 20(%ebp),%edi#matrice2
         movl (%edi,%eax,4),%ebx #matrice2[i][k]
 
         #pushl %ebx
@@ -517,13 +536,13 @@ matrix_mult:
         #i*n+j
         movl -4(%ebp),%eax #i
         xorl %edx,%edx
-        movl n,%ebx
+        movl 28(%ebp),%ebx
         mull %ebx #i*n
         movl -8(%ebp),%ebx
         addl %ebx,%eax #i*n+j
 
         #matrice_rezultat[i][j] += matrice[i][k]*matrice2[k][j]
-        movl 16(%ebp),%edi
+        movl 24(%ebp),%edi
         movl (%edi,%eax,4),%ebx
         addl %ecx,%ebx
         movl %ebx,(%edi,%eax,4)
@@ -562,6 +581,8 @@ matrix_mult:
 
 
   movl %ebp,%esp
+  popl %edi
+  popl %ebx
   popl %ebp
   ret
 
@@ -571,10 +592,13 @@ matrix_copy:
 
   #epilog
   pushl %ebp
+  pushl %ebx
+  pushl %edi
+  pushl %esi
   movl %esp,%ebp
 
-  #8(%ebp) - m1
-  #12(%ebp) - m2
+  #20(%ebp) - m1
+  #24(%ebp) - m2
   #memorie
   subl $8,%esp
   #-4(%ebp) - i
@@ -614,8 +638,8 @@ matrix_copy:
       movl -8(%ebp),%ebx
       addl %ebx,%eax #[i][j]
 
-      movl 8(%ebp),%edi #m1
-      movl 12(%ebp),%esi #m2
+      movl 20(%ebp),%edi #m1
+      movl 24(%ebp),%esi #m2
 
       movl (%edi,%eax,4),%ebx
       movl %ebx,(%esi,%eax,4)
@@ -636,6 +660,9 @@ matrix_copy:
 
   iesire_copiere:
   movl %ebp,%esp
+  popl %esi
+  popl %edi
+  popl %ebx
   popl %ebp
   ret
 
@@ -749,7 +776,8 @@ cerinta_2:
   jl nu_exista
 
   #afisare numar de drumuri
-  pushl lungime_drum
+  #pushl lungime_drum
+  pushl %edx
   #pushl $exitsa_drum
   pushl $printare_numar
   call printf
@@ -761,8 +789,6 @@ cerinta_2:
   pushl $nu_exitsa_drum
   call puts
   popl %ebx
-
-
 
 et_exit:
 movl $1,%eax
